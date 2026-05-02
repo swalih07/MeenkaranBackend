@@ -1,0 +1,6 @@
+@Ṃeenkaran_HostAddress = http://localhost:5016
+
+GET {{Ṃeenkaran_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
