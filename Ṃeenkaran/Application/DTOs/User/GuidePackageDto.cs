@@ -1,7 +1,8 @@
-﻿namespace Ṃeenkaran.Application.DTOs.User
+namespace Ṃeenkaran.Application.DTOs.User
 {
     public class GuidePackageDto
     {
+        public int Id { get; set; }
         public string PackageName { get; set; } = string.Empty;
 
         public string Description { get; set; }=string.Empty;

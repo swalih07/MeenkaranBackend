@@ -1,9 +1,10 @@
-﻿using Ṃeenkaran.Application.Commen;
+using Ṃeenkaran.Application.Commen;
 using Ṃeenkaran.Application.DTOs.User;
 using Ṃeenkaran.Application.Interfaces;
 using Ṃeenkaran.Domain.Entities.User;
-using Microsoft.EntityFrameworkCore;
 using Ṃeenkaran.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace Ṃeenkaran.Application.Services
 {
@@ -12,20 +13,24 @@ namespace Ṃeenkaran.Application.Services
         private readonly AppDbContext _context;
         private readonly CloudinaryService _cloudinary;
         private readonly JwtService _jwt;
+        private readonly EmailService _email;
 
         public AuthService(
             AppDbContext context,
             CloudinaryService cloudinary,
-            JwtService jwt)
+            JwtService jwt,
+            EmailService email)
         {
             _context = context;
             _cloudinary = cloudinary;
             _jwt = jwt;
+            _email = email;
         }
 
         // Register
         public async Task<ApiResponse<string>> RegisterAsync(RegisterDto dto)
         {
+            dto.Email = dto.Email.Trim().ToLower();
             if (await _context.Users.AnyAsync(x => x.Email == dto.Email))
             {
                 return new ApiResponse<string>
@@ -164,6 +169,94 @@ namespace Ṃeenkaran.Application.Services
                     RefreshToken = newRefreshToken
                 }
             };
+        }
+        
+        public async Task<string> ForgotPasswordAsync(string email)
+        {
+            email = email.Trim().ToLower();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
+
+            if (user == null)
+                return "User not found";
+
+            // Generate OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            user.ResetOtp = otp;
+            user.ResetOtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+            await _context.SaveChangesAsync();
+
+            await _email.SendOtpAsync(email, otp);
+
+            return "OTP sent to email";
+        }
+
+        public async Task<string> ResetPasswordAsync(ResetPasswordDto dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email.ToLower() == email);
+
+            if (user == null)
+                return "User not found";
+
+            if (user.ResetOtp != dto.Otp)
+                return "Invalid OTP";
+
+            if (user.ResetOtpExpiry < DateTime.UtcNow)
+                return "OTP expired";
+
+            // Hash password
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            // Clear OTP
+            user.ResetOtp = null;
+            user.ResetOtpExpiry = null;
+
+            await _context.SaveChangesAsync();
+
+            return "Password reset successful";
+        }
+        public async Task<object> GetProfileAsync(string email)
+        {
+            var user = await _context.Users
+                .Where(x => x.Email == email)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,
+                    x.Email,
+                    x.ProfileImageUrl
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                throw new Exception("User not found");
+
+            return user;
+        }
+
+        public async Task<string> UpdateProfileAsync(string email, UpdateProfileDto dto)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (user == null)
+                return "User not found";
+
+            user.Name = dto.Name;
+
+            if (dto.ProfileImage != null)
+            {
+                var imageUrl = await _cloudinary.UploadImageAsync(dto.ProfileImage);
+                if (imageUrl != null)
+                {
+                    user.ProfileImageUrl = imageUrl;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return "Profile updated successfully";
         }
     }
 }

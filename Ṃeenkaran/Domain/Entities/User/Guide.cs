@@ -6,7 +6,12 @@ namespace Ṃeenkaran.Domain.Entities.User
     {
         public int Id { get; set; }
 
+        public int UserId { get; set; }
         public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string PhoneNumber { get; set; } = string.Empty;
+
+        public string PasswordHash { get; set; } = string.Empty;
 
         public string ProfileImageUrl { get; set; } = string.Empty;
 
@@ -17,10 +22,19 @@ namespace Ṃeenkaran.Domain.Entities.User
         public int ExperienceYears { get; set; }
 
         public decimal PricePerDay { get; set; }
+        public string IdProofUrl { get; set; } = string.Empty;
+        public bool IsApproved { get; set; } = false;
 
-        public double Rating { get; set; }
+        public double Rating { get; set; } = 0;
 
         public bool IsAvailable { get; set; } = true;
+
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime? RefreshTokenExpiryTime { get; set; }
+
+        public string? PasswordResetOtp { get; set; }
+        public DateTime? PasswordResetOtpExpiryTime { get; set; }
+        public bool IsPasswordResetOtpUsed { get; set; } = false;
 
         public ICollection<GuidePackage> Packages { get; set; }
             = new List<GuidePackage>();

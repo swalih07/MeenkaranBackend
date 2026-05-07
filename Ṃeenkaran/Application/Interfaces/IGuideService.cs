@@ -1,4 +1,4 @@
-﻿using Ṃeenkaran.Application.DTOs.User;
+using Ṃeenkaran.Application.DTOs.User;
 
 namespace Ṃeenkaran.Application.Interfaces
 {
@@ -6,6 +6,7 @@ namespace Ṃeenkaran.Application.Interfaces
     {
         Task<List<GuideDto>> SearchGuidesAsync(string? area, string? style);
         Task<List<GuidePackageDto>> GetGuidePackagesAsync(int guideId);
+        Task<List<GuideAvailabilityDto>> GetGuideAvailabilityAsync(int guideId);
 
     }
 }

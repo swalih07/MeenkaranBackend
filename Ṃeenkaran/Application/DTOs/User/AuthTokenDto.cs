@@ -1,0 +1,17 @@
+﻿using System.Globalization;
+
+namespace Ṃeenkaran.Application.DTOs.User
+{
+    public class AuthTokenDto
+    {
+        public string AccessToken { get; set; } = string.Empty;
+        public string RefreshToken { get; set; } = string.Empty;
+        public DateTime RefreshTokenExpiryTime { get; set; }
+
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+
+    }
+}
