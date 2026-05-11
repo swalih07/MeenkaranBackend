@@ -14,7 +14,10 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task SendOtpAsync(string toEmail, string otp)
         {
-            await SendEmailAsync(toEmail, "Meenkaran Password Reset OTP", $@"
+            await SendEmailAsync(
+                toEmail,
+                "Meenkaran Password Reset OTP",
+                $@"
                     <h2>Password Reset OTP</h2>
                     <p>Your OTP is:</p>
                     <h1>{otp}</h1>
@@ -24,8 +27,14 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            var fromEmail = _config["Email:swalihem11@gmail.com"];
-            var appPassword = _config["Email:ychz cjeb argm ygjc"];
+            var fromEmail = _config["Email:FromEmail"];
+            var appPassword = _config["Email:FromPassword"];
+
+            if (string.IsNullOrWhiteSpace(fromEmail))
+                throw new InvalidOperationException("Email:FromEmail missing in appsettings.json");
+
+            if (string.IsNullOrWhiteSpace(appPassword))
+                throw new InvalidOperationException("Email:FromPassword missing in appsettings.json");
 
             using var smtp = new SmtpClient("smtp.gmail.com")
             {
@@ -34,9 +43,9 @@ namespace Ṃeenkaran.Application.Services
                 EnableSsl = true
             };
 
-            var message = new MailMessage
+            using var message = new MailMessage
             {
-                From = new MailAddress(fromEmail!),
+                From = new MailAddress(fromEmail),
                 Subject = subject,
                 Body = body,
                 IsBodyHtml = true

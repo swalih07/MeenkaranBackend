@@ -22,6 +22,9 @@ namespace Ṃeenkaran.Infrastructure.Data
         public DbSet<PostLike> PostLikes { get; set; }
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<GuideReview> GuideReviews { get; set; }
+        public DbSet<GuideFeedback> GuideFeedbacks { get; set; }
+
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

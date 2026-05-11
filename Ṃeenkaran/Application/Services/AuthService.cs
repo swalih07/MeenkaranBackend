@@ -5,6 +5,7 @@ using Ṃeenkaran.Domain.Entities.User;
 using Ṃeenkaran.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using Ṃeenkaran.Domain.Constants;
 
 namespace Ṃeenkaran.Application.Services
 {
@@ -31,6 +32,7 @@ namespace Ṃeenkaran.Application.Services
         public async Task<ApiResponse<string>> RegisterAsync(RegisterDto dto)
         {
             dto.Email = dto.Email.Trim().ToLower();
+
             if (await _context.Users.AnyAsync(x => x.Email == dto.Email))
             {
                 return new ApiResponse<string>
@@ -41,25 +43,43 @@ namespace Ṃeenkaran.Application.Services
                 };
             }
 
-            var imageUrl = await _cloudinary.UploadImageAsync(dto.ProfileImage);
+            var imageUrl = dto.ProfileImage != null
+                ? await _cloudinary.UploadImageAsync(dto.ProfileImage)
+                : string.Empty;
+
+            var otp = Random.Shared.Next(100000, 999999).ToString();
 
             var user = new User
             {
                 Name = dto.Name,
                 Email = dto.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
-                ProfileImageUrl = imageUrl
+                Role=Roles.User,
+                ProfileImageUrl = imageUrl,
+                IsEmailVerified = false,
+                EmailOtp = otp,
+                EmailOtpExpiryTime = DateTime.UtcNow.AddMinutes(10),
+                IsEmailOtpUsed = false
             };
 
             await _context.Users.AddAsync(user);
-
             await _context.SaveChangesAsync();
+
+            await _email.SendEmailAsync(
+                user.Email,
+                "Meenkaran Email OTP Verification",
+                $@"
+            <h3>Email Verification OTP</h3>
+            <p>Your OTP is: <b>{otp}</b></p>
+            <p>This OTP will expire in 10 minutes.</p>
+        ");
 
             return new ApiResponse<string>
             {
                 Success = true,
-                Message = "User registered successfully",
-                StatusCode = 200
+                Message = "User registered successfully. OTP sent to email.",
+                StatusCode = 200,
+                Data = "OTP Sent"
             };
         }
 
@@ -67,8 +87,10 @@ namespace Ṃeenkaran.Application.Services
         // Login
         public async Task<ApiResponse<object>> LoginAsync(LoginDto dto)
         {
+            var email = dto.Email.Trim().ToLower();
+
             var user = await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == dto.Email);
+                .FirstOrDefaultAsync(x => x.Email == email);
 
             if (user == null ||
                 !BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
@@ -81,15 +103,20 @@ namespace Ṃeenkaran.Application.Services
                 };
             }
 
-            // Generate Access Token
-            var accessToken = _jwt.GenerateToken(user);
+            if (!user.IsEmailVerified)
+            {
+                return new ApiResponse<object>
+                {
+                    Success = false,
+                    Message = "Please verify your email OTP before login",
+                    StatusCode = 403
+                };
+            }
 
-            // Generate Refresh Token
+            var accessToken = _jwt.GenerateToken(user);
             var refreshToken = _jwt.GenerateRefreshToken();
 
-            // Save Refresh Token
             user.RefreshToken = refreshToken;
-
             user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
 
             await _context.SaveChangesAsync();
@@ -99,16 +126,14 @@ namespace Ṃeenkaran.Application.Services
                 Success = true,
                 Message = "Login Success",
                 StatusCode = 200,
-
                 Data = new
                 {
                     AccessToken = accessToken,
-
                     RefreshToken = refreshToken,
-
                     user.Id,
                     user.Name,
                     user.Email,
+                    user.Role,
                     user.ProfileImageUrl
                 }
             };
@@ -257,6 +282,88 @@ namespace Ṃeenkaran.Application.Services
             await _context.SaveChangesAsync();
 
             return "Profile updated successfully";
+        }
+        public async Task<ApiResponse<string>> VerifyEmailOtpAsync(UserVerifyOtpDto dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (user == null)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "User not found",
+                    StatusCode = 404
+                };
+            }
+
+            if (user.IsEmailVerified)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = true,
+                    Message = "Email already verified",
+                    StatusCode = 200,
+                    Data = "Verified"
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(user.EmailOtp))
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "OTP not generated",
+                    StatusCode = 400
+                };
+            }
+
+            if (user.IsEmailOtpUsed)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "OTP already used",
+                    StatusCode = 400
+                };
+            }
+
+            if (user.EmailOtpExpiryTime == null || user.EmailOtpExpiryTime < DateTime.UtcNow)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "OTP expired",
+                    StatusCode = 400
+                };
+            }
+
+            if (user.EmailOtp != dto.Otp)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = "Invalid OTP",
+                    StatusCode = 400
+                };
+            }
+
+            user.IsEmailVerified = true;
+            user.IsEmailOtpUsed = true;
+            user.EmailOtp = null;
+            user.EmailOtpExpiryTime = null;
+
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<string>
+            {
+                Success = true,
+                Message = "Email verified successfully",
+                StatusCode = 200,
+                Data = "Verified"
+            };
         }
     }
 }

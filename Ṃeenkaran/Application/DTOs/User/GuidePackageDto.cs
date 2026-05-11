@@ -9,7 +9,7 @@ namespace Ṃeenkaran.Application.DTOs.User
 
         public decimal Price { get; set; }
 
-        public string Duration { get; set; } = string.Empty;
+        public int DurationHours { get; set; }
 
         public string Includes { get; set; } = string.Empty;
     }

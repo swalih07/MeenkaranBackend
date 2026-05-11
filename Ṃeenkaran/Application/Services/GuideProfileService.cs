@@ -42,7 +42,9 @@ namespace Ṃeenkaran.Application.Services
                     Email = guide.Email,
                     PhoneNumber = guide.PhoneNumber,
                     ProfileImageUrl = guide.ProfileImageUrl,
-                    IdProogurl = guide.IdProofUrl,
+                    IdProofUrl = guide.IdProofUrl,
+                    Bio= guide.Bio,
+                    Skills= guide.Skills,
                     Area = guide.Area,
                     FishingStyle = guide.FishingStyle,
                     ExperienceYears = guide.ExperienceYears,
@@ -101,6 +103,12 @@ namespace Ṃeenkaran.Application.Services
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 guide.Name = dto.Name;
 
+            if (!string.IsNullOrWhiteSpace(dto.Bio))
+                guide.Bio = dto.Bio;
+
+            if (!string.IsNullOrWhiteSpace(dto.Skills))
+                guide.Skills = dto.Skills;
+
             if (!string.IsNullOrWhiteSpace(dto.Area))
                 guide.Area = dto.Area;
 
@@ -127,6 +135,44 @@ namespace Ṃeenkaran.Application.Services
                 Message = "Guide profile updated successfully",
                 StatusCode = 200,
                 Data = "Updated"
+            };
+        }
+        public async Task<ApiResponse<GuideFullProfileDto>>GetGuideProfileAsync(int guideId)
+        {
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Id == guideId);
+
+            if (guide == null)
+            {
+                return new ApiResponse<GuideFullProfileDto>
+                {
+                    Success = false,
+                    Message = "Guide not found",
+                    StatusCode = 404
+                };
+            }
+            return new ApiResponse<GuideFullProfileDto>
+            {
+                Success = true,
+                Message = "Guide profile fetched successfully",
+                StatusCode = 200,
+                Data = new GuideFullProfileDto
+                {
+                    Id = guide.Id,
+                    Name = guide.Name,
+                    Email = guide.Email,
+                    PhoneNumber = guide.PhoneNumber,
+                    ProfileImageUrl = guide.ProfileImageUrl,
+                    IdProofUrl = guide.IdProofUrl,
+                    Bio = guide.Bio,
+                    Skills = guide.Skills,
+                    Area = guide.Area,
+                    FishingStyle = guide.FishingStyle,
+                    ExperienceYear = guide.ExperienceYears,
+                    PricePerDay = guide.PricePerDay,
+                    IsApproved = guide.IsApproved,
+                    IsAvailable = guide.IsAvailable,
+                    Rating = guide.Rating
+                }
             };
         }
     }

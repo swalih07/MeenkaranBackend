@@ -75,5 +75,13 @@ namespace Ṃeenkaran.Presentaion.Controllers
 
             return Ok(result);
         }
+        [HttpPost("verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] UserVerifyOtpDto dto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            var result = await _authService.VerifyEmailOtpAsync(dto);
+            return StatusCode(result.StatusCode, result);
+        }
     }
 }

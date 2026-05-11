@@ -56,7 +56,7 @@ namespace Ṃeenkaran.Application.Services
                     PackageName = x.PackageName,
                     Description = x.Description,
                     Price = x.Price,
-                    Duration = x.Duration,
+                    DurationHours = x.DurationHours,
                     Includes = x.Includes
                 })
                 .ToListAsync();
@@ -80,7 +80,7 @@ namespace Ṃeenkaran.Application.Services
                         PackageName = p.PackageName,
                         Description = p.Description,
                         Price = p.Price,
-                        Duration = p.Duration,
+                        DurationHours = p.DurationHours,
                         Includes = p.Includes
                     })
                     .ToList()

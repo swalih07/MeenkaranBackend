@@ -13,5 +13,6 @@ namespace Ṃeenkaran.Application.Interfaces
         Task<string> ResetPasswordAsync(ResetPasswordDto dto);
         Task<object> GetProfileAsync(string email);
         Task<string> UpdateProfileAsync(string email, UpdateProfileDto dto);
+        Task<ApiResponse<string>> VerifyEmailOtpAsync(UserVerifyOtpDto dto);
     }
 }

@@ -13,6 +13,9 @@ namespace Ṃeenkaran.Domain.Entities.User
 
         public string PasswordHash { get; set; } = string.Empty;
 
+        public string Bio { get; set; } = string.Empty;
+        public string Skills { get; set; } = string.Empty;
+
         public string ProfileImageUrl { get; set; } = string.Empty;
 
         public string Area { get; set; } = string.Empty;
@@ -38,5 +41,13 @@ namespace Ṃeenkaran.Domain.Entities.User
 
         public ICollection<GuidePackage> Packages { get; set; }
             = new List<GuidePackage>();
+
+
+
+        public bool IsRejected { get; set; }
+        public string RejectionReason { get; set; } = string.Empty;
+
+        public bool IsBlocked { get; set; }
+        public string BlockReason { get; set; } = string.Empty;
     }
 }

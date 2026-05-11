@@ -19,7 +19,7 @@ namespace Ṃeenkaran.Application.Services
         // USER token
         public string GenerateToken(User user)
         {
-            return GenerateToken(user.Id, user.Name, user.Email, "User");
+            return GenerateToken(user.Id, user.Name, user.Email, user.Role);
         }
 
         // GUIDE token

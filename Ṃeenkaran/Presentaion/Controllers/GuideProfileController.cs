@@ -29,6 +29,7 @@ namespace Ṃeenkaran.Presentaion.Controllers
             return StatusCode(result.StatusCode, result);
         }
         [HttpPut("me")]
+        [Consumes("multipart/from-data")]
         public async Task<IActionResult> UpdateMyProfile([FromForm] UpdateGuideProfileDto dto)
         {
             if (!ModelState.IsValid)
@@ -42,5 +43,13 @@ namespace Ṃeenkaran.Presentaion.Controllers
             var result = await _guideProfileService.UpdateMyProfileAsync(guideId, dto);
             return StatusCode(result.StatusCode, result);
         }
+        [AllowAnonymous]
+        [HttpGet("{guideId}")]
+        public async Task<IActionResult>GetGuideById(int guideId)
+        {
+            var result = await _guideProfileService.GetGuideProfileAsync(guideId);
+            return StatusCode(result.StatusCode, result);
+        }
+        
     }
 }

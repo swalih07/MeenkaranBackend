@@ -1,7 +1,9 @@
 using Ṃeenkaran.Application.Interfaces;
+using Ṃeenkaran.Application.Interfaces.Admin;
 using Ṃeenkaran.Application.Services;
+using Ṃeenkaran.Application.Services.Admin;
 using Ṃeenkaran.Infrastructure.Data;
-
+using Ṃeenkaran.Presentaion.Middleware;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 
@@ -78,6 +80,10 @@ builder.Services.AddScoped<ILeaderboardService, LeaderboardService>();
 builder.Services.AddScoped<IGuideReviewService, GuideReviewService>();
 builder.Services.AddScoped<IGuideAuthService, GuideAuthService>();
 builder.Services.AddScoped<IGuideProfileService, GuideProfileService>();
+builder.Services.AddScoped<IGuidePackageService, GuidePackageService>();
+builder.Services.AddScoped<IGuideReportService, GuideReportService>();
+builder.Services.AddScoped<IAdminVerificationService, AdminVerificationService>();
+
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CloudinaryService>();
@@ -135,6 +141,7 @@ app.UseHttpsRedirection();
 
 // CORS (must be before auth sometimes depending on frontend)
 app.UseCors("AllowAll");
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseAuthentication();
 app.UseAuthorization();

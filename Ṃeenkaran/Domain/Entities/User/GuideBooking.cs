@@ -19,8 +19,12 @@ namespace Ṃeenkaran.Domain.Entities.User
         public GuidePackage GuidePackage { get; set; }
 
         public DateTime BookingDate { get; set; }
+        public int PersonCount { get; set; }
+        public string Notes { get; set; }=string.Empty;
 
         //public string Status { get; set; } = "Pending";
-        public BookingStatus Status { get; set; }=BookingStatus.Pending;
+        public BookingStatus Status { get; set; } = BookingStatus.Pending;
+        public decimal TotelAmount { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace Ṃeenkaran.Application.DTOs.User
 {
-    public class FishingSpotDto
+    public class NearbyFishingSpotDto
     {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;

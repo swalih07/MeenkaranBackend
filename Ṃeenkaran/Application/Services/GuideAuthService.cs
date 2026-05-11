@@ -28,6 +28,9 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task<ApiResponse<string>> RegisterAsync(GuideRegisterDto dto)
         {
+            dto.Email = dto.Email.Trim().ToLower();
+            dto.PhoneNumber = dto.PhoneNumber.Trim();
+
             var emailExists = await _context.Guides.AnyAsync(x => x.Email == dto.Email);
             if (emailExists)
             {
@@ -50,12 +53,17 @@ namespace Ṃeenkaran.Application.Services
                 };
             }
 
-            var profileUrl = await _cloudinaryService.UploadImageAsync(dto.ProfileImage);
-            var idProofUrl = await _cloudinaryService.UploadImageAsync(dto.IdProof);
+            var profileUrl = dto.ProfileImage != null
+                ? await _cloudinaryService.UploadImageAsync(dto.ProfileImage)
+                : string.Empty;
+
+            var idProofUrl = dto.IdProof != null
+                ? await _cloudinaryService.UploadImageAsync(dto.IdProof)
+                : string.Empty;
 
             var guide = new Guide
             {
-                Name = dto.Name,
+                Name = dto.Name.Trim(),
                 Email = dto.Email,
                 PhoneNumber = dto.PhoneNumber,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
@@ -65,7 +73,13 @@ namespace Ṃeenkaran.Application.Services
                 FishingStyle = dto.FishingStyle,
                 ExperienceYears = dto.ExperienceYears,
                 PricePerDay = dto.PricePerDay,
+
                 IsApproved = false,
+                IsRejected = false,
+                RejectionReason = null,
+                IsBlocked = false,
+                BlockReason = null,
+
                 IsAvailable = true,
                 Rating = 0
             };
@@ -84,7 +98,9 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task<ApiResponse<AuthTokenDto>> LoginAsync(GuideLoginDto dto)
         {
-            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var email = dto.Email.Trim().ToLower();
+
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == email);
 
             if (guide == null)
             {
@@ -93,6 +109,36 @@ namespace Ṃeenkaran.Application.Services
                     Success = false,
                     Message = "Invalid email or password",
                     StatusCode = 401
+                };
+            }
+
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
+                };
+            }
+
+            if (guide.IsRejected)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = $"Your application was rejected. Reason: {guide.RejectionReason}",
+                    StatusCode = 403
+                };
+            }
+
+            if (!guide.IsApproved)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "Your guide profile is under review. Please wait for 24 hours",
+                    StatusCode = 403
                 };
             }
 
@@ -114,16 +160,6 @@ namespace Ṃeenkaran.Application.Services
                     Success = false,
                     Message = "Invalid email or password",
                     StatusCode = 401
-                };
-            }
-
-            if (!guide.IsApproved)
-            {
-                return new ApiResponse<AuthTokenDto>
-                {
-                    Success = false,
-                    Message = "Your guide profile is under review. Please wait for 24 hours",
-                    StatusCode = 403
                 };
             }
 
@@ -167,6 +203,36 @@ namespace Ṃeenkaran.Application.Services
                 };
             }
 
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
+                };
+            }
+
+            if (guide.IsRejected)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = $"Your application was rejected. Reason: {guide.RejectionReason}",
+                    StatusCode = 403
+                };
+            }
+
+            if (!guide.IsApproved)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "Your guide profile is under review",
+                    StatusCode = 403
+                };
+            }
+
             if (guide.RefreshTokenExpiryTime == null || guide.RefreshTokenExpiryTime <= DateTime.UtcNow)
             {
                 return new ApiResponse<AuthTokenDto>
@@ -205,7 +271,9 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task<ApiResponse<string>> ForgotPasswordAsync(GuideForgetPasseordDto dto)
         {
-            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var email = dto.Email.Trim().ToLower();
+
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == email);
 
             if (guide == null)
             {
@@ -214,6 +282,16 @@ namespace Ṃeenkaran.Application.Services
                     Success = false,
                     Message = "Guide not found",
                     StatusCode = 404
+                };
+            }
+
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
                 };
             }
 
@@ -245,7 +323,9 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task<ApiResponse<string>> VerifyOtpAsync(GuideVerifyOtpDto dto)
         {
-            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var email = dto.Email.Trim().ToLower();
+
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == email);
 
             if (guide == null)
             {
@@ -254,6 +334,16 @@ namespace Ṃeenkaran.Application.Services
                     Success = false,
                     Message = "Guide not found",
                     StatusCode = 404
+                };
+            }
+
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
                 };
             }
 
@@ -311,7 +401,9 @@ namespace Ṃeenkaran.Application.Services
 
         public async Task<ApiResponse<string>> ResetPasswordAsync(GuideResetPasswordDto dto)
         {
-            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == dto.Email);
+            var email = dto.Email.Trim().ToLower();
+
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == email);
 
             if (guide == null)
             {
@@ -320,6 +412,16 @@ namespace Ṃeenkaran.Application.Services
                     Success = false,
                     Message = "Guide not found",
                     StatusCode = 404
+                };
+            }
+
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<string>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
                 };
             }
 
