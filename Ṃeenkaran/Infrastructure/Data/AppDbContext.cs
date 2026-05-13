@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Ṃeenkaran.Domain.Entities.User;
+using Ṃeenkaran.Domain.Entities.Admin;
 
 namespace Ṃeenkaran.Infrastructure.Data
 {
@@ -23,6 +24,16 @@ namespace Ṃeenkaran.Infrastructure.Data
         public DbSet<PostComment> PostComments { get; set; }
         public DbSet<GuideReview> GuideReviews { get; set; }
         public DbSet<GuideFeedback> GuideFeedbacks { get; set; }
+        public DbSet<CommunityPost> CommunityPosts { get; set; }
+        public DbSet<CommunityPostReport> CommunityPostReports { get; set; }
+        public DbSet<FishingSpotReview> FishingSpotReviews { get; set; }
+        public DbSet<SafetyAlert> SafetyAlerts { get; set; }
+        public DbSet<SystemErrorLog> SystemErrorLogs { get; set; }
+        public DbSet<SuspiciousLoginAttempt> SuspiciousLoginAttempts { get; set; }
+        public DbSet<GuidePayment> GuidePayments { get; set; }
+        public DbSet<PlatformPaymentSetting> PlatformPaymentSettings { get; set; }
+        public DbSet<TripBooking> TripBookings => Set<TripBooking>();
+        public DbSet<GuidePayout> GuidePayouts => Set<GuidePayout>();
 
 
 
@@ -54,5 +65,6 @@ namespace Ṃeenkaran.Infrastructure.Data
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
+
     }
 }

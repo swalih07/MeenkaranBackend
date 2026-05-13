@@ -1,4 +1,4 @@
-﻿using Ṃeenkaran.Application.DTOs.User;
+using Ṃeenkaran.Application.DTOs.User;
 using Ṃeenkaran.Application.Interfaces;
 using Ṃeenkaran.Domain.Entities.User;
 using Ṃeenkaran.Infrastructure.Data;
@@ -16,13 +16,13 @@ namespace Ṃeenkaran.Application.Services
             _context = context;
             _cloudinaryService = cloudinaryService;
         }
-        public async Task<string>CreatePostAsync(CreateCatchPostDto dto)
+        public async Task<string>CreatePostAsync(int userId, CreateCatchPostDto dto)
         {
             var imageUrl = await _cloudinaryService.UploadImageAsync(dto.Image);
 
             var post = new CatchPost
             {
-                UserId = dto.UserId,
+                UserId = userId,
                 ImageUrl = imageUrl,
                 Description = dto.Description,
                 FishType = dto.FishType,

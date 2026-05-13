@@ -39,8 +39,8 @@ namespace Ṃeenkaran.Application.Services
                 SpotName = dto.SpotName,
                 Description = dto.Description,
                 LocationName = dto.LocationName,
-                Latitude = (double)dto.Latitude,
-                Longitude = (double)dto.Longitude,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
                 SpotType = dto.SpotType,
                 ImageUrl = dto.ImageUrl ?? string.Empty,
                 IsHotspot = dto.IsHotspot,
@@ -84,10 +84,10 @@ namespace Ṃeenkaran.Application.Services
                 spot.LocationName = dto.LocationName;
 
             if (dto.Latitude != 0)
-                spot.Latitude = (double)dto.Latitude;
+                spot.Latitude = dto.Latitude;
 
             if (dto.Longitude != 0)
-                spot.Longitude = (double)dto.Longitude;
+                spot.Longitude = dto.Longitude;
 
             if (!string.IsNullOrWhiteSpace(dto.SpotType))
                 spot.SpotType = dto.SpotType;
@@ -167,8 +167,8 @@ namespace Ṃeenkaran.Application.Services
                     Id = spot.Id,
                     SpotName = spot.SpotName,
                     Description = spot.Description,
-                    Latitude = (decimal)spot.Latitude,
-                    Longitude = (decimal)spot.Longitude,
+                    Latitude = spot.Latitude,
+                    Longitude = spot.Longitude,
                     SpotType = spot.SpotType,
                     ImageUrl = spot.ImageUrl,
                 }
@@ -185,8 +185,8 @@ namespace Ṃeenkaran.Application.Services
                     Id = x.Id,
                     SpotName = x.SpotName,
                     Description = x.Description,
-                    Latitude = (decimal)x.Latitude,
-                    Longitude = (decimal)x.Longitude,
+                    Latitude = x.Latitude,
+                    Longitude = x.Longitude,
                     SpotType = x.SpotType,
                     ImageUrl = x.ImageUrl
 
@@ -212,8 +212,8 @@ namespace Ṃeenkaran.Application.Services
                     Id=x.Id,
                     SpotName=x.SpotName,
                     Description = x.Description,
-                    Latitude = (decimal)x.Latitude,
-                    Longitude = (decimal)x.Longitude,
+                    Latitude = x.Latitude,
+                    Longitude = x.Longitude,
                     SpotType=x.SpotType,
                     ImageUrl=x.ImageUrl
                 })

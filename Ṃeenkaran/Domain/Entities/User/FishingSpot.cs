@@ -23,6 +23,16 @@ namespace Ṃeenkaran.Domain.Entities.User
         public string ImageUrl { get; set; } = string.Empty;
         public bool IsActive { get; set; } = true;
 
+
+        public bool IsApproved { get; set; } = false;
+        public bool IsRemoved { get; set; } = false;
+
+        public int? ReviewedByAdminId { get; set; }
+        public DateTime? ApprovedAt { get; set; }
+        public DateTime? RejectedAt { get; set; }
+        public DateTime? RemovedAt { get; set; }
+        public string? RejectReason { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? UpdatedAt { get; set; }
     }

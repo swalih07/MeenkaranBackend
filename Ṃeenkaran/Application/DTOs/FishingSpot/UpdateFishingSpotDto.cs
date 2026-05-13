@@ -14,8 +14,8 @@ namespace Ṃeenkaran.Application.DTOs.FishingSpot
         public string LocationName {  get; set; } = string.Empty;
 
 
-        public decimal Latitude { get; set; }
-        public decimal Longitude { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
 
 
         public string SpotType { get; set; } = string.Empty;

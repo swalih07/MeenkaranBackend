@@ -39,6 +39,10 @@ namespace Ṃeenkaran.Domain.Entities.User
         public DateTime? PasswordResetOtpExpiryTime { get; set; }
         public bool IsPasswordResetOtpUsed { get; set; } = false;
 
+        public string? LoginOtp { get; set; }
+        public DateTime? LoginOtpExpiryTime { get; set; }
+        public bool IsLoginOtpUsed { get; set; } = false;
+
         public ICollection<GuidePackage> Packages { get; set; }
             = new List<GuidePackage>();
 

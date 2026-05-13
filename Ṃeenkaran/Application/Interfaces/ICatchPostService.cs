@@ -1,10 +1,10 @@
-﻿using Ṃeenkaran.Application.DTOs.User;
+using Ṃeenkaran.Application.DTOs.User;
 
 namespace Ṃeenkaran.Application.Interfaces
 {
     public interface ICatchPostService
     {
-        Task<string>CreatePostAsync(CreateCatchPostDto dto);
+        Task<string>CreatePostAsync(int userId, CreateCatchPostDto dto);
         Task<List<CatchFeedDto>> GetCommunityFeedAsync(string location);
     }
 }

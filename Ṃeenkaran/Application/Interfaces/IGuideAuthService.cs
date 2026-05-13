@@ -1,4 +1,4 @@
-﻿using CloudinaryDotNet;
+using CloudinaryDotNet;
 using Ṃeenkaran.Application.Commen;
 using Ṃeenkaran.Application.DTOs.User;
 
@@ -14,5 +14,6 @@ namespace Ṃeenkaran.Application.Interfaces
         Task<ApiResponse<string>> ForgotPasswordAsync(GuideForgetPasseordDto dto);
         Task<ApiResponse<string>> VerifyOtpAsync(GuideVerifyOtpDto dto);
         Task<ApiResponse<string>> ResetPasswordAsync(GuideResetPasswordDto dto);
+        Task<ApiResponse<AuthTokenDto>> VerifyLoginOtpAsync(GuideVerifyOtpDto dto);
     }
 }

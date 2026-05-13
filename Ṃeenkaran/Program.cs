@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddHttpClient();
 
 // Swagger
 builder.Services.AddSwaggerGen(options =>
@@ -83,12 +84,24 @@ builder.Services.AddScoped<IGuideProfileService, GuideProfileService>();
 builder.Services.AddScoped<IGuidePackageService, GuidePackageService>();
 builder.Services.AddScoped<IGuideReportService, GuideReportService>();
 builder.Services.AddScoped<IAdminVerificationService, AdminVerificationService>();
+builder.Services.AddScoped<IAdminFishingSpotService, AdminFishingSpotService>();
+builder.Services.AddScoped<IAdminCommunityModerationService, AdminCommunityModerationService>();
+builder.Services.AddScoped<IAdminSystemSafetyService, AdminSystemSafetyService>();
+builder.Services.AddScoped<IGuidePaymentService, GuidePaymentService>();
+builder.Services.AddScoped<IGuideEarningService, GuideEarningService>();
+builder.Services.AddScoped<IAdminPaymentService, AdminPaymentService>();
+builder.Services.AddScoped<IAdminPlatformAnalyticsService, AdminPlatformAnalyticsService>();
 
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<CloudinaryService>();
 builder.Services.AddScoped<JwtService>();
 builder.Services.AddScoped<EmailService>();
+
+// Razorpay
+var razorpayOptions = new Ṃeenkaran.Infrastructure.Razorpay.Settings();
+builder.Configuration.GetSection("Razorpay").Bind(razorpayOptions);
+builder.Services.AddSingleton(razorpayOptions);
 
 // -------------------- AUTHENTICATION --------------------
 

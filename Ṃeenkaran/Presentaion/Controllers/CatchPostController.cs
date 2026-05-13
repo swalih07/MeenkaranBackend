@@ -1,9 +1,12 @@
-﻿using Ṃeenkaran.Application.DTOs.User;
+using Ṃeenkaran.Application.DTOs.User;
 using Ṃeenkaran.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Ṃeenkaran.Presentaion.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/user/catch-posts")]
     public class CatchPostController:ControllerBase
@@ -17,7 +20,10 @@ namespace Ṃeenkaran.Presentaion.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost([FromForm]CreateCatchPostDto dto)
         {
-            var result = await _service.CreatePostAsync(dto);
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            if (userId == 0) return Unauthorized("Invalid User");
+
+            var result = await _service.CreatePostAsync(userId, dto);
 
             return Ok(result);
         }

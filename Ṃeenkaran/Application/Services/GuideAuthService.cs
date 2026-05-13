@@ -163,29 +163,30 @@ namespace Ṃeenkaran.Application.Services
                 };
             }
 
-            var accessToken = _jwt.GenerateToken(guide.Id, guide.Name, guide.Email, "Guide");
-            var refreshToken = _jwt.GenerateRefreshToken();
-
-            guide.RefreshToken = refreshToken;
-            guide.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+            // Generate Login OTP
+            var otp = Random.Shared.Next(100000, 999999).ToString();
+            guide.LoginOtp = otp;
+            guide.LoginOtpExpiryTime = DateTime.UtcNow.AddMinutes(10);
+            guide.IsLoginOtpUsed = false;
 
             await _context.SaveChangesAsync();
+
+            // Send Email
+            await _emailService.SendEmailAsync(
+                guide.Email,
+                "Meenkaran Guide Login OTP",
+                $@"
+                    <h3>Login OTP Verification</h3>
+                    <p>Your OTP for login is: <b>{otp}</b></p>
+                    <p>This OTP will expire in 10 minutes</p>
+                ");
 
             return new ApiResponse<AuthTokenDto>
             {
                 Success = true,
-                Message = "Guide login successful",
+                Message = "Login credentials valid. OTP sent to your email.",
                 StatusCode = 200,
-                Data = new AuthTokenDto
-                {
-                    Id = guide.Id,
-                    Name = guide.Name,
-                    Email = guide.Email,
-                    Role = "Guide",
-                    AccessToken = accessToken,
-                    RefreshToken = refreshToken,
-                    RefreshTokenExpiryTime = guide.RefreshTokenExpiryTime.Value
-                }
+                Data = null // No token yet, needs OTP verification
             };
         }
 
@@ -469,6 +470,103 @@ namespace Ṃeenkaran.Application.Services
                 Message = "Password reset successful",
                 StatusCode = 200,
                 Data = "Password Updated"
+            };
+        }
+
+        public async Task<ApiResponse<AuthTokenDto>> VerifyLoginOtpAsync(GuideVerifyOtpDto dto)
+        {
+            var email = dto.Email.Trim().ToLower();
+
+            var guide = await _context.Guides.FirstOrDefaultAsync(x => x.Email == email);
+
+            if (guide == null)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "Guide not found",
+                    StatusCode = 404
+                };
+            }
+
+            if (guide.IsBlocked)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = guide.BlockReason ?? "Your account is blocked",
+                    StatusCode = 403
+                };
+            }
+
+            if (string.IsNullOrWhiteSpace(guide.LoginOtp))
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "OTP not generated",
+                    StatusCode = 400
+                };
+            }
+
+            if (guide.IsLoginOtpUsed)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "OTP already used",
+                    StatusCode = 400
+                };
+            }
+
+            if (guide.LoginOtpExpiryTime == null || guide.LoginOtpExpiryTime < DateTime.UtcNow)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "OTP expired",
+                    StatusCode = 400
+                };
+            }
+
+            if (guide.LoginOtp != dto.Otp)
+            {
+                return new ApiResponse<AuthTokenDto>
+                {
+                    Success = false,
+                    Message = "Invalid OTP",
+                    StatusCode = 400
+                };
+            }
+
+            // OTP is valid
+            guide.IsLoginOtpUsed = true;
+            guide.LoginOtp = null;
+            guide.LoginOtpExpiryTime = null;
+
+            var accessToken = _jwt.GenerateToken(guide.Id, guide.Name, guide.Email, "Guide");
+            var refreshToken = _jwt.GenerateRefreshToken();
+
+            guide.RefreshToken = refreshToken;
+            guide.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(7);
+
+            await _context.SaveChangesAsync();
+
+            return new ApiResponse<AuthTokenDto>
+            {
+                Success = true,
+                Message = "Login successful",
+                StatusCode = 200,
+                Data = new AuthTokenDto
+                {
+                    Id = guide.Id,
+                    Name = guide.Name,
+                    Email = guide.Email,
+                    Role = "Guide",
+                    AccessToken = accessToken,
+                    RefreshToken = refreshToken,
+                    RefreshTokenExpiryTime = guide.RefreshTokenExpiryTime.Value
+                }
             };
         }
     }

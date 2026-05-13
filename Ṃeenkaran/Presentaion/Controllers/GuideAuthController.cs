@@ -1,4 +1,4 @@
-﻿using Ṃeenkaran.Application.DTOs.User;
+using Ṃeenkaran.Application.DTOs.User;
 using Ṃeenkaran.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,6 +60,15 @@ namespace Ṃeenkaran.Presentaion.Controllers
                 return BadRequest(ModelState);
 
             var result = await _guideAuthService.VerifyOtpAsync(dto);
+            return StatusCode(result.StatusCode, result);
+        }
+        [HttpPost("verify-login-otp")]
+        public async Task<IActionResult> VerifyLoginOtp([FromBody] GuideVerifyOtpDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var result = await _guideAuthService.VerifyLoginOtpAsync(dto);
             return StatusCode(result.StatusCode, result);
         }
         [HttpPost("reset-password")]
